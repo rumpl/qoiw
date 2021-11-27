@@ -41,7 +41,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut event_pump = sdl_context.event_pump().unwrap();
     canvas.clear();
 
-    texture.with_lock(None, |a, _| cc(a, &pxls))?;
+    texture.with_lock(None, |a, _| copy(a, &pxls))?;
     canvas.copy(&texture, None, None)?;
     canvas.present();
 
@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn cc(a: &mut [u8], pxls: &[Pixel]) {
+fn copy(a: &mut [u8], pxls: &[Pixel]) {
     let u128_slice: &mut [u32] = bytemuck::cast_slice_mut(a);
 
     for (i, l) in u128_slice.iter_mut().enumerate() {
