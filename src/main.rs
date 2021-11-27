@@ -64,9 +64,6 @@ fn cc(a: &mut [u8], pxls: &[Pixel]) {
     let u128_slice: &mut [u32] = bytemuck::cast_slice_mut(a);
 
     for (i, l) in u128_slice.iter_mut().enumerate() {
-        *l = (pxls[i].r as u32) << 24
-            | (pxls[i].g as u32) << 16
-            | (pxls[i].b as u32) << 8
-            | (pxls[i].a as u32);
+        *l = pxls[i].into();
     }
 }
