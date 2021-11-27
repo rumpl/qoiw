@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, error::Error};
 
 use qoi::Pixel;
 use sdl2::{
@@ -8,15 +8,15 @@ use sdl2::{
     render::TextureAccess,
 };
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
     let image = &args[1];
     let mut pxls: Vec<Pixel> = Vec::new();
 
-    let (width, height) = qoi::decode_file_into_vec(image, &mut pxls).unwrap();
+    let (width, height) = qoi::decode_file_into_vec(image, &mut pxls)?;
 
-    let sdl_context = sdl2::init().unwrap();
-    let video_subsystem = sdl_context.video().unwrap();
+    let sdl_context = sdl2::init()?;
+    let video_subsystem = sdl_context.video()?;
 
     let window = video_subsystem
         .window("QOI", width as u32, height as u32)
@@ -24,27 +24,25 @@ fn main() {
         .build()
         .unwrap();
 
-    let mut canvas = window.into_canvas().build().unwrap();
+    let mut canvas = window.into_canvas().build()?;
 
     canvas.set_draw_color(Color::RGB(0, 255, 255));
     canvas.clear();
     canvas.present();
 
     let texture_creator = canvas.texture_creator();
-    let mut texture = texture_creator
-        .create_texture(
-            PixelFormatEnum::RGBA8888,
-            TextureAccess::Streaming,
-            width as u32,
-            height as u32,
-        )
-        .unwrap();
+    let mut texture = texture_creator.create_texture(
+        PixelFormatEnum::RGBA8888,
+        TextureAccess::Streaming,
+        width as u32,
+        height as u32,
+    )?;
 
     let mut event_pump = sdl_context.event_pump().unwrap();
     canvas.clear();
 
-    texture.with_lock(None, |a, _| cc(a, &pxls)).unwrap();
-    canvas.copy(&texture, None, None).unwrap();
+    texture.with_lock(None, |a, _| cc(a, &pxls))?;
+    canvas.copy(&texture, None, None)?;
     canvas.present();
 
     'running: loop {
@@ -58,6 +56,8 @@ fn main() {
             _ => {}
         }
     }
+
+    Ok(())
 }
 
 fn cc(a: &mut [u8], pxls: &[Pixel]) {
